@@ -1,16 +1,4 @@
-const usedCells = [];
-const Positions = {
-    1: [83, 83],
-    2: [249, 83],
-    3: [418, 83],
-    4: [83, 249],
-    5: [249, 249],
-    6: [418, 249],
-    7: [83, 418],
-    8: [249, 418],
-    9: [418, 418]
-};
-const state = [
+const gridState = [
     [null, null, null],
     [null, null, null],
     [null, null, null]
@@ -18,37 +6,70 @@ const state = [
 
 let isCurrentlyNought = true;
 
+function testForWin() {
+    // process the gridState and see if there's a row of three
+    // return null for no win or "X" or "O" if there's a win
+}
+
 function handleClick (event) {
-    console.log(event)
-    const positionIndex = convertCoordsToPosition(event.x, event.y);
-    if (usedCells.includes(positionIndex)){
+    const gridCoords = getGridCoords(event.x, event.y);
+    console.log(gridCoords);
+    if (gridState[gridCoords.yGrid - 1][gridCoords.xGrid - 1] !== null){
         return;
     }
-    usedCells.push(positionIndex);
-    if (isCurrentlyNought == true) {
-        drawNought(positionIndex);
+
+    gridState[gridCoords.yGrid - 1][gridCoords.xGrid - 1] = (isCurrentlyNought === true) ? "O" : "X";
+
+    if (isCurrentlyNought === true) {
         isCurrentlyNought = false;
     } else {
-        drawCross(positionIndex);
         isCurrentlyNought = true
+    }
+
+    if (testForWin()) {
+        // show message that the game is over and who won
+    }
+
+    clearCanvas();
+    render();
+}
+
+function clearCanvas() {
+    const myCanvas = document.getElementById("myCanvas")
+    const context = myCanvas.getContext('2d');
+    context.clearRect(0, 0, myCanvas.width, myCanvas.height);
+}
+
+function render() {
+    console.log(gridState)
+    drawGrid();
+    for (let y = 0; y < gridState.length; y++) {
+        for (let x = 0; x < gridState[y].length; x++) {
+            if(gridState[y][x] === null) {
+                continue;
+            }
+            if(gridState[y][x] === "X"){
+                drawCross(x, y);
+            } else {
+                drawNought(x, y);
+            }
+        }
     }
 }
 
-function mapCoordsToPositionIndex(Xcellindex, Ycellindex){
-    const mapPosition = Xcellindex + 3 * Ycellindex - 3;
-    return mapPosition;
-}
-
-function convertCoordsToPosition (x, y) {
+function getGridCoords (x, y) {
     const myCanvas = document.getElementById("myCanvas")
     const rectangle = myCanvas.getBoundingClientRect()
     const Xreal = x - rectangle.left
     const Yreal = y - rectangle.top
     console.log(myCanvas.getBoundingClientRect())
-    const Xcellindex = Math.ceil(Xreal/166.666)
-    const Ycellindex = Math.ceil(Yreal/166.666)
-    console.log(Xcellindex,Ycellindex);
-    return mapCoordsToPositionIndex(Xcellindex,Ycellindex);
+    const xGrid = Math.ceil(Xreal/166.666)
+    const yGrid = Math.ceil(Yreal/166.666)
+    console.log(xGrid, yGrid);
+    return {
+        xGrid: xGrid,
+        yGrid: yGrid
+    }; // {xGrid: 2, yGrid: 1}
 }
 
 function drawGrid() {
@@ -66,35 +87,24 @@ function drawGrid() {
 
 }
 
-function drawNought(positionIndex) {
+function drawNought(x, y) {
     var c = document.getElementById("myCanvas");
     var ctx = c.getContext("2d");
     ctx.beginPath();
-    const Xpos = Positions[positionIndex][0];
-    const Ypos = Positions[positionIndex][1];
-    // ctx.arc(Xpos, Ypos,50,0,2*Math.PI);
-
-    console.log("Xpos" + Xpos)
-    console.log("Ypos" + Ypos)
-
-    ctx.arc(Xpos, Ypos,50,0,2*Math.PI);
+    ctx.arc(x * 166 + 83, y * 166 + 83  ,50,0,2 * Math.PI);
     ctx.stroke();
 }
 
-function drawCross(positionIndex) {
+function drawCross(x, y ) {
     var c = document.getElementById("myCanvas");
     var ctx = c.getContext("2d");
-    const Xpos = Positions[positionIndex][0];
-    const Ypos = Positions[positionIndex][1];
+    const Xpos = 166 * x + 83;
+    const Ypos = 166 * y + 83;
     ctx.moveTo(Xpos - 50, Ypos - 50);
     ctx.lineTo(Xpos + 50,  Ypos + 50);
     ctx.moveTo(Xpos + 50, Ypos - 50);
     ctx.lineTo(Xpos - 50, Ypos + 50);
     ctx.stroke();
-}
-
-function enterIntoGrid(type, Xpos, Ypos) {
-
 }
 
 function showCoords(event) {
@@ -104,8 +114,5 @@ function showCoords(event) {
     document.getElementById("demo").innerHTML = text;
 }
 
-drawGrid()
-
-// e.g paint a cross in the top right of the grid
-enterIntoGrid("cross")
+render();
 
