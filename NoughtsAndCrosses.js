@@ -5,15 +5,40 @@ const gridState = [
 ];
 
 let isCurrentlyNought = true;
+let isWin = false
 
 function testForWin() {
     // process the gridState and see if there's a row of three
     // return null for no win or "X" or "O" if there's a win
+    // check horizontal rows
+    for (let i = 0; i < gridState.length; i++) {
+        const row = gridState[i];
+        if(row[0] === row[1] && row[0] === row[2] && row[0] !== null) {
+            isWin = true;
+            return row[0]
+        }
+    }
+    // check the vertical columns
+    for (let i = 0; i < 3; i++) {
+        if(gridState[0][i] === gridState[1][i] && gridState[0][i] === gridState[2][i] && gridState[0][i] !== null){
+            isWin = true;
+            return gridState[0][i];
+        }
+    }
+    // check the diagonals
+    if (gridState[0][0] === gridState[1][1] && gridState[0][0] === gridState[2][2] && gridState[0][0] !== null){
+        isWin = true;
+        return gridState[0][0];
+    }
+    if (gridState[2][0] === gridState[1][1] && gridState[0][2] === gridState[1][1] && gridState[1][1] !== null){
+        isWin = true;
+        return gridState[1][1];
+    }
 }
 
 function handleClick (event) {
+    if (isWin === true) {return;}
     const gridCoords = getGridCoords(event.x, event.y);
-    console.log(gridCoords);
     if (gridState[gridCoords.yGrid - 1][gridCoords.xGrid - 1] !== null){
         return;
     }
@@ -25,9 +50,11 @@ function handleClick (event) {
     } else {
         isCurrentlyNought = true
     }
-
-    if (testForWin()) {
+    const winningSymbol = testForWin();
+    if (winningSymbol !== undefined) {
         // show message that the game is over and who won
+        document.getElementsByClassName("WonSign")[0].innerHTML = winningSymbol + " Won";
+        console.log(winningSymbol + ' won')
     }
 
     clearCanvas();
@@ -41,7 +68,6 @@ function clearCanvas() {
 }
 
 function render() {
-    console.log(gridState)
     drawGrid();
     for (let y = 0; y < gridState.length; y++) {
         for (let x = 0; x < gridState[y].length; x++) {
@@ -62,10 +88,8 @@ function getGridCoords (x, y) {
     const rectangle = myCanvas.getBoundingClientRect()
     const Xreal = x - rectangle.left
     const Yreal = y - rectangle.top
-    console.log(myCanvas.getBoundingClientRect())
     const xGrid = Math.ceil(Xreal/166.666)
     const yGrid = Math.ceil(Yreal/166.666)
-    console.log(xGrid, yGrid);
     return {
         xGrid: xGrid,
         yGrid: yGrid
